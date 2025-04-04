@@ -6,12 +6,16 @@
 
 #define HO 37
 #define LC 79
+#define CELL_WIDTH 2 // 每个迷宫格子的屏幕宽度
 #define MAX_TRAIL 50  // 最大轨迹点数
 #define AUTO_SPEED 50
 #define MANUAL_SPEED 30
 #define PLAYER_COLOR 9
 #define TRAIL_COLOR 8
 #define WALL_COLOR 7
+
+#define MAZE_COL(x) ((x)/CELL_WIDTH)
+#define MAZE_ROW(y) ((y))
 
 struct sign
 {
@@ -25,7 +29,7 @@ struct people
 	int direction;   //1=左 2=上 3=右 4=下
 	int mode; //0=手动 1=自动
 	int steps;
-}man={LC/2,HO/4,3,0,0};   //玩家初始
+}man={4,2,3,0,0};   //玩家初始
 int h,l;   //迷宫生成时的当前坐标
 int **road;   //迷宫地图
 clock_t last_trail_time;   // 轨迹时间记录
@@ -150,16 +154,9 @@ void autoshow()
 }
 
 int can_move(int dir) {
-    int maze_row = man.y ;
-    int maze_col = man.x / 2;
-    gotoxy(0, HO+2);
-    printf("当前位置: 屏幕(%d,%d) 迷宫(%d,%d) 值=%d   ",man.x, man.y, maze_col, maze_row,
-           (maze_row >= 0 && maze_row < HO && maze_col >= 0 && maze_col < LC) ? road[maze_row][maze_col] : -1);
+    int maze_row = MAZE_ROW(man.y);
+    int maze_col = MAZE_COL(man.x);
 
-    gotoxy(end_x, end_y);
-    set_color(12);  // 红色
-    printf("◎");
-    printf("目标位置: 屏幕(%d,%d)",end_x,end_y);
     if (maze_row < 0 || maze_row >= HO || maze_col < 0 || maze_col >= LC) return 0;
     switch (dir) {
         case 1: return (maze_col > 0 && road[maze_row][maze_col - 1] == 0);
@@ -172,10 +169,14 @@ int can_move(int dir) {
 }
 void game()
 {
+    man.x = 2*CELL_WIDTH; // 迷宫起点(2,2)对应的屏幕坐标
+    man.y = 2;
     gotoxy(man.x, man.y);
     set_color(PLAYER_COLOR);
     printf("♂");
-
+    gotoxy(end_x, end_y);
+    set_color(12);  // 红色
+    printf("◎");
     while(1)
         {
             gotoxy(man.x, man.y);
